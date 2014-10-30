@@ -570,7 +570,7 @@ Select.prototype.highlight = function (el) {
   this.active = el;
   // set the input's value to
   // the name of the current option
-  // this.input.value = this.active.getAttribute('data-name');
+  this.input.value = this.active.getAttribute('data-name');
   return this;
 };
 
@@ -704,6 +704,7 @@ Select.prototype.onkeydown = function(e){
       if (!this.active || !visible) return;
       var name = this.active.getAttribute('data-name');
       this.select(name);
+      this.announce(name + ' selected');
       break;
     case 'backspace':
       this.dehighlight();
@@ -817,6 +818,19 @@ Select.prototype.announceList = debounce(function () {
     log.innerHTML = availOpts.length + ' options available. Press down.';
   }
 }, 1500);
+
+/**
+ * Politely announce a message in the live region.
+ *
+ * @param {String} msg
+ * @api public
+ */
+
+Select.prototype.announce = function (msg) {
+  if (typeof msg != 'string') return;
+  var log = query('[role=log]');
+  log.innerHTML = msg;
+};
 
 /**
  * Create an option.
