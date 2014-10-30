@@ -14,8 +14,60 @@ var keyname = require('keyname');
 var events = require('events');
 var domify = require('domify');
 var query = require('query');
+var bind = require('bind');
+var trim = require('trim');
 var each = require('each');
 var tpl = domify(template);
+
+/**
+ * [We clobber Pillbox#add to add a11y markup.]
+ *
+ * Add `tag`.
+ *
+ * @param {String} tag
+ * @return {Pillbox} self
+ * @api public
+ */
+
+Pillbox.prototype.add = function(tag) {
+  var self = this;
+  tag = trim(tag);
+
+  // blank
+  if ('' == tag) return;
+
+  // exists
+  if (this.tags.has(tag)) return;
+
+  // lowercase
+  if (this.options.lowercase) tag = tag.toLowerCase();
+
+  // add it
+  this.tags.add(tag);
+
+  // list item
+  var span = document.createElement('span');
+  span.setAttribute('data', tag);
+  span.appendChild(document.createTextNode(tag));
+  span.onclick = function(e) {
+    e.preventDefault();
+    self.input.focus();
+  };
+
+  // delete link
+  var del = document.createElement('a');
+  del.appendChild(document.createTextNode('✕'));
+  del.href = '#';
+  del.setAttribute('role', 'button');
+  del.setAttribute('title', tag);
+  del.onclick = bind(this, this.remove, tag);
+  span.appendChild(del);
+
+  this.el.insertBefore(span, this.input);
+  this.emit('add', tag);
+
+  return this;
+};
 
 /**
  * Export `Select`
@@ -122,7 +174,6 @@ Select.prototype.multiple = function(label, opts){
   this.classes.add('select-multiple');
   this.box = new Pillbox(this.input, opts);
   this.box.events.unbind('keydown');
-  this.box.on('add', this.addPillLabels);
   this.box.on('remove', this.deselect.bind(this));
   return this;
 };
@@ -812,21 +863,3 @@ function option(obj, value, el){
   // opt
   return obj;
 }
-
-/**
- * Adds role="button" and a title to the links
- * that remove select options from the pillbox
- * (e.g., "X").
- *
- * @api public
- */
-
-Select.prototype.addPillLabels = function () {
-  var pills = query.all('.pillbox span a');
-  [].slice.call(pills).forEach(function (pill) {
-    var name = pill.parentNode.getAttribute('data');
-    console.info('adding %s to ', name, pill);
-    pill.setAttribute('role', 'button');
-    pill.setAttribute('title', 'unselect ' + name);
-  });
-};
