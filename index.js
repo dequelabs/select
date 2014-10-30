@@ -59,7 +59,7 @@ Pillbox.prototype.add = function(tag) {
   del.appendChild(document.createTextNode('✕'));
   del.href = '#';
   del.setAttribute('role', 'button');
-  del.setAttribute('title', tag);
+  del.setAttribute('title', 'remove ' + tag);
   del.onclick = bind(this, this.remove, tag);
   span.appendChild(del);
 
@@ -847,6 +847,7 @@ function option(obj, value, el){
   // element
   if (!obj.el) {
     obj.el = document.createElement('li');
+    obj.el.setAttribute('role', 'option');
     obj.el.textContent = obj.label;
   }
 
