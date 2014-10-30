@@ -201,8 +201,6 @@ Select.prototype.select = function(name){
   this.emit('select', opt);
   opt.selected = true;
 
-  this.addPillLabels();
-
   // hide
   opt.el.setAttribute('hidden', '');
   classes(opt.el).add('selected');
@@ -478,8 +476,6 @@ Select.prototype.search = function(term){
   if (!this.visible()) {
     this.show();
   }
-
-  this.announceList();
 
   // custom search
   this.emit('search', term, opts);
@@ -822,17 +818,14 @@ function option(obj, value, el){
  * that remove select options from the pillbox
  * (e.g., "X").
  *
- * `this` equals `Select#`
- *
- * @api private
+ * @api public
  */
 
 Select.prototype.addPillLabels = function () {
-  this.box.tags.vals.forEach(function (val) {
-    var pill = query('#type-select span[data="' + val + '"] a');
-    if (pill) {
-      pill.setAttribute('role', 'button');
-      pill.setAttribute('title', 'unselect ' + val);
-    }
+  var pills = query.all('.pillbox span a');
+  [].slice.call(pills).forEach(function (pill) {
+    var name = pill.parentNode.getAttribute('data');
+    pill.setAttribute('role', 'button');
+    pill.setAttribute('title', 'unselect ' + name);
   });
 };

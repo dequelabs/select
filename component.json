@@ -22,8 +22,8 @@
     "ianstormtaylor/next-sibling": "*"
   },
   "development": {
-    "visionmedia/mocha-matrix": "*",
-    "visionmedia/mocha": "*",
+    "tj/mocha-matrix": "*",
+    "mochajs/mocha": "*",
     "component/assert": "*",
     "component/dom": "*"
   }
