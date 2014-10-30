@@ -201,6 +201,8 @@ Select.prototype.select = function(name){
   this.emit('select', opt);
   opt.selected = true;
 
+  addPillLabels.call(this);
+
   // hide
   opt.el.setAttribute('hidden', '');
   classes(opt.el).add('selected');
@@ -357,6 +359,7 @@ Select.prototype.hide = function(name){
 
 Select.prototype.enterList = function (e) {
   if (keyname(e.which) == 'down' &&
+      !e.altKey &&
       !query('.select-option.highlighted')) {
 
     var el = query('.select-option:not([hidden]):not(.selected)', this.opts);
