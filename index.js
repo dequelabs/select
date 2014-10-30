@@ -570,7 +570,7 @@ Select.prototype.highlight = function (el) {
   this.active = el;
   // set the input's value to
   // the name of the current option
-  this.input.value = this.active.getAttribute('data-name');
+  // this.input.value = this.active.getAttribute('data-name');
   return this;
 };
 
