@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>select example</title>
+  <link rel="stylesheet" href="build/build.css">
+</head>
+<body>
+  <div id="fixture"></div>
+  <script src="build/build.js"></script>
+  <script>
+    var fixture = document.getElementById('fixture');
+
+    var select = new require('select')()
+    .add('cats')
+    .add('dogs')
+    .add('people')
+    .liveregion()
+    .multiple()
+    .add('all')
+    .select('all');
+
+    fixture.appendChild(select.el);
+    select.addPillLabels();
+  </script>
+</body>
+</html>
