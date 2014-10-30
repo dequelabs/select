@@ -291,6 +291,7 @@ Select.prototype.deselect = function(name){
   // deselect
   this.emit('deselect', opt);
   opt.selected = false;
+  this.announce(name + ' removed');
 
   // show
   opt.el.removeAttribute('hidden');
