@@ -122,7 +122,7 @@ Select.prototype.multiple = function(label, opts){
   this.classes.add('select-multiple');
   this.box = new Pillbox(this.input, opts);
   this.box.events.unbind('keydown');
-  this.box.on('add', addPillLabels.bind(this));
+  this.box.on('add', this.addPillLabels);
   this.box.on('remove', this.deselect.bind(this));
   return this;
 };
@@ -201,7 +201,7 @@ Select.prototype.select = function(name){
   this.emit('select', opt);
   opt.selected = true;
 
-  addPillLabels.call(this);
+  this.addPillLabels();
 
   // hide
   opt.el.setAttribute('hidden', '');
@@ -827,7 +827,7 @@ function option(obj, value, el){
  * @api private
  */
 
-function addPillLabels() {
+Select.prototype.addPillLabels = function () {
   this.box.tags.vals.forEach(function (val) {
     var pill = query('#type-select span[data="' + val + '"] a');
     if (pill) {
@@ -835,4 +835,4 @@ function addPillLabels() {
       pill.setAttribute('title', 'unselect ' + val);
     }
   });
-}
+};
