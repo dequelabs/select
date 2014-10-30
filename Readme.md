@@ -1,8 +1,6 @@
 # select
 
-  modern &lt;select&gt;. (WIP)
-
-  [see the demo](http://yields.github.io/select/index.html)
+  modern, accessible &lt;select&gt;
 
 ```js
 var Select = require('select');
@@ -17,7 +15,7 @@ var select = Select()
   .add('Lua')
   .add('C++')
   .add('C', 200)
-  .select('Jasvascript')
+  .select('Javascript')
   .select('Google Go')
   .deselect('Google Go')
   .select('c');
@@ -37,6 +35,7 @@ select.on('change', function(){
 
     $ component install yields/select
 
+
 ## API
 
 ### Select()
@@ -51,6 +50,10 @@ select.on('change', function(){
 
   Set the label.
 
+#### .liveregion()
+
+  Adds a aria-live region which will announce the number of matching options in the dropdown.
+
 #### .multiple([label])
 
   Allow multiple selections.
@@ -59,7 +62,7 @@ select.on('change', function(){
 
   Allow search.
 
-#### add(name[, value [, el]])
+#### .add(name[, value [, el]])
 
   Add an option with `name` and optional `value`.
 
@@ -68,78 +71,78 @@ select.on('change', function(){
 
     add('js', 0, '<li><img src="js.jpg">Javascript')
 
-#### remove(name)
+#### .remove(name)
 
   Remove an option with `name`.
 
-#### empty()
+#### .empty()
 
   Remove all options.
 
-#### select(name)
+#### .select(name)
 
   Select an option with `name`.
 
-#### deselect(name)
+#### .deselect(name)
 
   De-select `name`.
 
-#### focus()
+#### .focus()
 
   Focus `<input>`.
 
-#### blur()
+#### .blur()
 
   Blur `<input>`.
 
-#### highlight(name)
+#### .highlight(name)
 
   Highlight an option by `name`.
 
   When an option is in "highlight" mode, it will be selected when the
   user hits enter.
 
-#### dehighlight()
+#### .dehighlight()
 
   De-highlight "highlight"ed option
 
-#### get(name)
+#### .get(name)
 
   Get an option with `name`.
 
-#### show([name])
+#### .show([name])
 
   Show the dropdown or option `name`.
 
-#### hide([name])
+#### .hide([name])
 
   Hide the dropdown or option `name`.
 
-#### visible([name])
+#### .visible([name])
 
   Check if option `name` or dropdown are visible.
 
-#### toggle([name])
+#### .toggle([name])
 
   Toggle `.show([name])`, `.hide([name])`.
 
-#### disable(name)
+#### .disable(name)
 
   Disable an option `name`.
 
-#### enable(name)
+#### .enable(name)
 
   Enable an option `name`.
 
-#### selected([options])
+#### .selected([options])
 
   Get / set selected options.
 
-#### values()
+#### .values()
 
   Get selected values.
 
-#### search(term)
+#### .search(term)
 
   Search options with `term`, if there are listeners for `search` event, the `.search()` method will do nothing.
   this allows you to set up custom search.

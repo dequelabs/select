@@ -1,4 +1,15 @@
 
+0.6.0 / 2014-10-30
+==================
+
+Added several accessibility-related features including
+
+ * a logging liveregion to announce the number of matching options
+ * altered event-handling to accomodate non-sighted users
+ * wai-aria combobox attributes
+ * additional labelling
+ * other things I can't recall at the moment
+
 0.5.1 / 2014-01-05
 ==================
 

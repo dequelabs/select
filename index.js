@@ -1,5 +1,6 @@
+
 /**
- * dependencies
+ * Dependencies
  */
 
 var previous = require('previous-sibling');
@@ -52,17 +53,21 @@ Emitter(Select.prototype);
 /**
  * Bind internal events.
  *
+ * The dropdown is only entered
+ * when "down" is pressed.
+ *
  * @return {Select}
  * @api private
  */
 
-Select.prototype.bind = function(){
+Select.prototype.bind = function () {
   this.events.bind('click .select-box', 'focus');
   this.events.bind('mouseover .select-option');
   var onsearch = this.onsearch.bind(this);
   this.input.onkeyup = debounce(onsearch, 300);
   this.docEvents.bind('touchstart', 'blur');
   this.inputEvents.bind('focus', 'show');
+  this.inputEvents.bind('keyup', 'enterList');
   this.events.bind('touchstart');
   this.inputEvents.bind('blur');
   this.events.bind('keydown');
@@ -100,6 +105,10 @@ Select.prototype.label = function(label){
 /**
  * Allow multiple.
  *
+ * Adds a listener that adds title attributes
+ * and role="button" to pills' close ("x") links
+ * when new pills are added.
+ *
  * @param {String} label
  * @param {Object} opts
  * @return {Select}
@@ -113,6 +122,7 @@ Select.prototype.multiple = function(label, opts){
   this.classes.add('select-multiple');
   this.box = new Pillbox(this.input, opts);
   this.box.events.unbind('keydown');
+  this.box.on('add', addPillLabels.bind(this));
   this.box.on('remove', this.deselect.bind(this));
   return this;
 };
@@ -277,16 +287,28 @@ Select.prototype.get = function(name){
 /**
  * Show options or `name`
  *
+ * Prevents list options from being highlighted
+ * by default. Triggers a polite announcement
+ * regarding the number of options available.
+ *
  * @param {String} name
  * @return {Select}
  * @api public
  */
 
-Select.prototype.show = function(name){
+Select.prototype.show = function (name) {
   var opt = this.get(name);
 
   // visible
   if (this.visible(name)) return this;
+
+  // clear any currently selected/highlighted options
+  var highlighted = query('.select-option.highlighted', this.opts);
+  if (highlighted) {
+    classes(highlighted).remove('highlighted');
+  }
+
+  this.announceList();
 
   // show
   opt.el.removeAttribute('hidden');
@@ -302,10 +324,6 @@ Select.prototype.show = function(name){
   // show
   this.emit('show');
   this.classes.add('open');
-
-  // highlight
-  var el = query('.select-option:not([hidden]):not(.selected)', this.opts);
-  if (el) this.highlight(el);
 
   return this;
 };
@@ -326,6 +344,24 @@ Select.prototype.hide = function(name){
   this.classes.remove('open');
   this.showAll();
   return this;
+};
+
+/**
+ * On "down" press when the input is focused,
+ * highlight the first available list option.
+ *
+ * @param {Event} e
+ * @return {Select}
+ * @api public
+ */
+
+Select.prototype.enterList = function (e) {
+  if (keyname(e.which) == 'down' &&
+      !query('.select-option.highlighted')) {
+
+    var el = query('.select-option:not([hidden]):not(.selected)', this.opts);
+    if (el) this.highlight(el);
+  }
 };
 
 /**
@@ -419,21 +455,28 @@ Select.prototype.values = function(){
 /**
  * Search `term`.
  *
+ * Prevents the first match from being
+ * automatically highlighted. Announces
+ * the presence of available dropdown
+ * options.
+ *
  * @param {String} term
  * @return {Search}
  * @api public
  */
 
 Select.prototype.search = function(term){
-  var expr = term.toLowerCase()
-    , opts = this.options
-    , self = this
-    , found = 0;
+  var expr = term.toLowerCase();
+  var opts = this.options;
+  var self = this;
+  var found = 0;
 
   // show
   if (!this.visible()) {
-    this.show()
+    this.show();
   }
+
+  this.announceList();
 
   // custom search
   this.emit('search', term, opts);
@@ -448,7 +491,6 @@ Select.prototype.search = function(term){
 
     if (~name.indexOf(expr)) {
       self.show(name);
-      if (1 == ++found) self.highlight(opt.el);
     } else {
       self.hide(opt.name);
     }
@@ -461,29 +503,41 @@ Select.prototype.search = function(term){
 /**
  * Highlight the given `name`.
  *
+ * Transfers the value of the highlighted option
+ * into the input. Adds an id to the active option
+ * for "aria-activedescendant" association.
+ *
  * @param {String|Element} el
  * @return {Select}
  * @api private
  */
 
-Select.prototype.highlight = function(el){
+Select.prototype.highlight = function (el) {
   if ('string' == typeof el) el = this.get(el).el;
   this.dehighlight();
   classes(el).add('highlighted');
+  el.id = 'typeselect-active';
   this.active = el;
+  // set the input's value to
+  // the name of the current option
+  this.input.value = this.active.getAttribute('data-name');
   return this;
 };
 
 /**
  * De-highlight.
  *
+ * Removes the id attribute from the element
+ * to break aria-activedescendant association.
+ *
  * @return {Select}
  * @api public
  */
 
-Select.prototype.dehighlight = function(){
+Select.prototype.dehighlight = function () {
   if (!this.active) return this;
   classes(this.active).remove('highlighted');
+  this.active.removeAttribute('id');
   this.active = null;
   return this;
 };
@@ -567,13 +621,16 @@ Select.prototype.onsearch = function(e){
 /**
  * on-keydown.
  *
+ * Clears the highlighted option when backspace
+ * and character-keys are pressed.
+ *
  * @param {Event} e
  * @api private
  */
 
 Select.prototype.onkeydown = function(e){
-  var visible = this.visible()
-    , box = this.box;
+  var visible = this.visible();
+  var box = this.box;
 
   // actions
   switch (keyname(e.which)) {
@@ -599,12 +656,16 @@ Select.prototype.onkeydown = function(e){
       this.select(name);
       break;
     case 'backspace':
+      this.dehighlight();
+      this.announceList();
       if (box) return box.onkeydown(e);
       var all = this._selected;
       var item = all[all.length - 1];
       if (!item) return;
       this.deselect(item.name);
       break;
+    default:
+      this.dehighlight();
   }
 };
 
@@ -677,6 +738,37 @@ Select.prototype.ontouchstart = function(e){
 };
 
 /**
+ * Creates a liveregion for option announcements.
+ *
+ * @return {Select}
+ * @api public
+ */
+
+Select.prototype.liveregion = function () {
+  var log = document.createElement('div');
+  log.setAttribute('role', 'log');
+  log.setAttribute('aria-atomic', 'true');
+  log.setAttribute('aria-relevant', 'text');
+  this.input.parentNode.appendChild(log);
+  return this;
+};
+
+/**
+ * Updates the content of the log to announce
+ * the number of suggestions available.
+ *
+ * @api public
+ */
+
+Select.prototype.announceList = debounce(function () {
+  var log = query('[role=log]');
+  var availOpts = query.all('.select-option:not([hidden])', this.opts);
+  if (log && availOpts.length) {
+    log.innerHTML = availOpts.length + ' options available. Press down.';
+  }
+}, 1500);
+
+/**
  * Create an option.
  *
  * @param {String|Object} obj
@@ -698,7 +790,7 @@ function option(obj, value, el){
   // option
   obj.label = obj.name;
   obj.name = obj.name.toLowerCase();
-  obj.value = obj.value == null 
+  obj.value = obj.value == null
     ? obj.name
     : obj.value;
 
@@ -720,4 +812,24 @@ function option(obj, value, el){
 
   // opt
   return obj;
+}
+
+/**
+ * Adds role="button" and a title to the links
+ * that remove select options from the pillbox
+ * (e.g., "X").
+ *
+ * `this` equals `Select#`
+ *
+ * @api private
+ */
+
+function addPillLabels() {
+  this.box.tags.vals.forEach(function (val) {
+    var pill = query('#type-select span[data="' + val + '"] a');
+    if (pill) {
+      pill.setAttribute('role', 'button');
+      pill.setAttribute('title', 'unselect ' + val);
+    }
+  });
 }
