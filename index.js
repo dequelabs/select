@@ -825,6 +825,7 @@ Select.prototype.addPillLabels = function () {
   var pills = query.all('.pillbox span a');
   [].slice.call(pills).forEach(function (pill) {
     var name = pill.parentNode.getAttribute('data');
+    console.info('adding %s to ', name, pill);
     pill.setAttribute('role', 'button');
     pill.setAttribute('title', 'unselect ' + name);
   });
