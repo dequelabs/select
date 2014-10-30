@@ -46,3 +46,9 @@
 .select-option.selected {
   display: none;
 }
+
+.select [role=log] {
+  position: absolute;
+  top: -999em;
+  left: -999em;
+}
